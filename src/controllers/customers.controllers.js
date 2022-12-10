@@ -1,8 +1,12 @@
-import dayjs from "dayjs";
 import connectionDB from "../database/database.js";
+import pg from "pg";
 
 export async function insertNewCustomer(req, res) {
   const { name, phone, cpf, birthday } = req.body;
+
+  pg.types.setTypeParser(1082, function (birthday) {
+    return birthday;
+  });
 
   try {
     await connectionDB.query(
@@ -19,6 +23,25 @@ export async function insertNewCustomer(req, res) {
 export async function returnCustomers(req, res) {
   try {
     const { rows } = await connectionDB.query("SELECT * FROM customers;");
+    res.send(rows);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+}
+
+export async function returnCustomerById(req, res) {
+  const { id } = req.params;
+
+  try {
+    const { rows } = await connectionDB.query(
+      "SELECT * FROM customers WHERE id=$1;",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).send("não existe cliente com esse id");
+    }
+
     res.send(rows);
   } catch (err) {
     res.status(500).send(err.message);
