@@ -1,11 +1,11 @@
-import joi from "joi";
 import connectionDB from "../database/database.js";
+
 
 export async function createCategoryValidation(req, res, next) {
   const { name } = req.body;
 
   if (!name) {
-    res.status(400).send("name não pode ser uma string vazia");
+    return res.status(400).send("name não pode ser uma string vazia");
   }
 
   try {
@@ -15,7 +15,7 @@ export async function createCategoryValidation(req, res, next) {
     );
 
     if (rows.length !== 0) {
-      res.status(409).send("name já existe");
+     return  res.status(409).send("name já existe");
     }
   } catch (err) {
     res.status(500).send(err.message);
