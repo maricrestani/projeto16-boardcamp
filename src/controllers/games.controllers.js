@@ -3,14 +3,6 @@ import connectionDB from "../database/database.js";
 export async function insertNewGame(req, res) {
   const { name, image, stockTotal, categoryId, pricePerDay } = req.body;
 
-  const newGame = {
-    name,
-    image,
-    stockTotal,
-    categoryId,
-    pricePerDay,
-  };
-
   try {
     const { rows } = await connectionDB.query(
       "SELECT * FROM games WHERE name = $1;",
