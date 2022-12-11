@@ -59,38 +59,10 @@ export async function returnCustomerById(req, res) {
 }
 
 export async function updateCustomer(req, res) {
-  const { id } = req.params;
   const { name, phone, cpf, birthday } = req.body;
-
-  const validation = newCustomerSchema.validate(req.body, {
-    abortEarly: false,
-  });
-  if (validation.error) {
-    const errors = validation.error.details.map((d) => d.message);
-    res.status(400).send(errors);
-    return;
-  }
-
+  const { id } = req.params;
+  
   try {
-    const cpfExists = await connectionDB.query(
-      "SELECT * FROM customers WHERE cpf = $1;",
-      [cpf]
-    );
-
-    const idExists = await connectionDB.query(
-      "SELECT id FROM customers WHERE cpf = $1;",
-      [cpf]
-    );
-    console.log("cpf exists", cpfExists.rows);
-    //console.log("idexists", idExists);
-
-    if (cpfExists) {
-      if (idExists.rows[0].id != id)
-        return res.status(409).send("cliente já existente");
-    } else {
-      console.log("ok");
-    }
-
     await connectionDB.query(
       "UPDATE customers SET name=$1, phone=$2, cpf=$3, birthday=$4 WHERE id=$5",
       [name, phone, cpf, birthday, id]
