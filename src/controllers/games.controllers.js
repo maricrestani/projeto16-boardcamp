@@ -25,13 +25,22 @@ export async function insertNewGame(req, res) {
 }
 
 export async function returnGames(req, res) {
-  const { name } = req.params;
-
-  //FALTAM OS FILTROS DE ACORDO COM A QUERY STRING DA REQ
+  const name = req.query.name;
 
   try {
-    const { rows } = await connectionDB.query("SELECT * FROM games;");
-    res.send(rows);
+    if (name) {
+      const filteredGames = await connectionDB.query(
+        `SELECT games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE games.name ILIKE $1 ;`,
+        [`${name}%`]
+      );
+      return res.send(filteredGames.rows);
+    }
+
+    const games = await connectionDB.query(
+      `SELECT games.*,  categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id;`
+    );
+
+    res.send(games.rows);
   } catch (err) {
     res.status(500).send(err.message);
   }

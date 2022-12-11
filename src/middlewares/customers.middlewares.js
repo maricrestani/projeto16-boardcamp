@@ -14,13 +14,16 @@ export async function newCustomerValidation(req, res, next) {
   }
 
   try {
-    const { rows } = await connectionDB.query(
+    const customer = await connectionDB.query(
       "SELECT * FROM customers WHERE cpf = $1;",
       [cpf]
     );
-    if (rows.length !== 0) {
+
+    if (customer.length !== 0) {
       return res.status(409).send("cliente já existente");
     }
+
+    
   } catch (err) {
     res.status(500).send(err.message);
   }
