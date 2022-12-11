@@ -19,11 +19,9 @@ export async function newCustomerValidation(req, res, next) {
       [cpf]
     );
 
-    if (customer.length !== 0) {
+    if (customer.rows.length !== 0) {
       return res.status(409).send("cliente já existente");
     }
-
-    
   } catch (err) {
     res.status(500).send(err.message);
   }

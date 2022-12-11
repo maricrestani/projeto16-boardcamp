@@ -21,9 +21,19 @@ export async function insertNewCustomer(req, res) {
 }
 
 export async function returnCustomers(req, res) {
+  const cpf = req.query.cpf;
+
   try {
-    const { rows } = await connectionDB.query("SELECT * FROM customers;");
-    res.send(rows);
+    if (cpf) {
+      const filteredCustomers = await connectionDB.query(
+        `SELECT * FROM customers WHERE customers.cpf LIKE $1;`,
+        [`${cpf}%`]
+      );
+      return res.send(filteredCustomers.rows);
+    }
+
+    const customers = await connectionDB.query("SELECT * FROM customers;");
+    res.send(customers.rows);
   } catch (err) {
     res.status(500).send(err.message);
   }
