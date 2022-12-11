@@ -2,8 +2,30 @@ import dayjs from "dayjs";
 import connectionDB from "../database/database.js";
 
 export async function returnRentals(req, res) {
+  const customerId = req.query.customerId;
+  const gameId = req.query.gameId;
+
   try {
-    const { rows } = await connectionDB.query("SELECT * FROM rentals;");
+    if (customerId) {
+      const filteredBycustomerId = await connectionDB.query(
+        `SELECT * FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id WHERE rentals."customerId" = $1;`,
+        [customerId]
+      );
+      return res.send(filteredBycustomerId.rows);
+    }
+
+    if (gameId) {
+      const filteredBygameId = await connectionDB.query(
+        `SELECT * FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id WHERE rentals."gameId" = $1;`,
+        [gameId]
+      );
+      return res.send(filteredBygameId.rows);
+    }
+
+    const { rows } =
+      await connectionDB.query(`SELECT * FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id
+`);
+
     res.send(rows);
   } catch (err) {
     res.status(500).send(err.message);
@@ -38,10 +60,25 @@ export async function insertNewRental(req, res) {
   res.sendStatus(201);
 }
 
-
-
 /*
- `SELECT games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE games.name ILIKE $1 ;`,
+       await connectionDB.query(`SELECT * FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id
+   
+
+
+const receitasCategorias = await connection.query(`
+      SELECT receitas.titulo AS "receita", categorias.nome AS "categoria" 
+        FROM receitas
+          JOIN categorias_receitas
+            ON receitas.id = categorias_receitas.id_receita
+          JOIN categorias
+            ON categorias_receitas.id_categoria = categorias.id
+          WHERE receitas.id = $1;
+    `, [id]);
+
+
+ `SELECT * FROM rentals JOIN customers ON rentals.customerId = customers.id JOIN games ON rentals.gameId = games.id
+ 
+ games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE games.name ILIKE $1 ;`,
 
 `SELECT games.*, categories.name AS "categoryName" FROM games JOIN categories ON games."categoryId"=categories.id WHERE games.name ILIKE $1 ;`,
 
@@ -70,4 +107,43 @@ retunrDate
 
 originalPrice
 delayFee
+*/
+
+/*
+
+[
+  {
+    id: 1,
+    customerId: 1,
+    gameId: 1,
+    rentDate: '2021-06-20',
+    daysRented: 3,
+    returnDate: null, // troca pra uma data quando já devolvido
+    originalPrice: 4500,
+    delayFee: null,
+
+    customer: {
+     id: 1,
+     name: 'João Alfredo'
+    },
+    game: {
+      id: 1,
+      name: 'Banco Imobiliário',
+      categoryId: 1,
+      categoryName: 'Estratégia'
+    }
+  }
+]
+
+
+{
+    "id": 1,
+    "customerId": 1,
+    "gameId": 1,
+    "rentDate": "2022-12-11T03:00:00.000Z",
+    "daysRented": 3,
+    "returnDate": null,
+    "originalPrice": 4500,
+    "delayFee": null
+  },
 */
