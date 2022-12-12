@@ -68,7 +68,7 @@ export async function insertNewRental(req, res) {
     );
 
     const rentDate = dayjs().format("YYYY-MM-DD");
-    const originalPrice = daysRented * pricePerDay.rows[0].pricePerDay;
+    const originalPrice = daysRented * pricePerDay.rows[0].pricePerDay * 100;
 
     await connectionDB.query(
       `INSERT INTO rentals
@@ -112,7 +112,6 @@ export async function returnRentedGame(req, res) {
     if (diff >= 0) {
       const delayedDays = diff - daysRented.rows[0].daysRented;
 
-      console.log("dekayesd days", delayedDays);
       if (delayedDays <= 0) {
         connectionDB.query(
           `UPDATE rentals SET "returnDate"=$1, 
