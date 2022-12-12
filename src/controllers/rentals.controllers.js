@@ -87,15 +87,19 @@ export async function returnRentedGame(req, res) {
   const delayFee = 0;
 
   try {
-  } catch (err) {}
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 }
 
 export async function deleteRental(req, res) {
   const rentalId = req.params.id;
 
   try {
-    await connectionDB.query(`DELETE FROM rentals WHERE id=$1';`, [rentalId]);
+    await connectionDB.query(`DELETE FROM rentals WHERE id=$1;`, [rentalId]);
 
     res.sendStatus(200);
-  } catch (err) {}
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 }
