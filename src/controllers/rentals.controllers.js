@@ -84,10 +84,51 @@ export async function insertNewRental(req, res) {
 }
 
 export async function returnRentedGame(req, res) {
+  const rentalId = req.params.id;
   const returnDate = dayjs().format("YYYY-MM-DD");
-  const delayFee = 0;
+  const dateToday = dayjs().format("YYYY-MM-DD");
 
   try {
+    const rentDate = await connectionDB.query(
+      `SELECT rentals."rentDate"::text FROM rentals WHERE id=$1;`,
+      [rentalId]
+    );
+
+    const daysRented = await connectionDB.query(
+      `SELECT rentals."daysRented" FROM rentals WHERE id=$1;`,
+      [rentalId]
+    );
+
+    const originalPrice = await connectionDB.query(
+      `SELECT rentals."originalPrice" FROM rentals WHERE id=$1;`,
+      [rentalId]
+    );
+
+    const pricePerDay =
+      originalPrice.rows[0].originalPrice / daysRented.rows[0].daysRented;
+
+    const diff = dayjs(rentDate.rows[0].rentDate).diff(dateToday, "day");
+
+    if (diff >= 0) {
+      const delayedDays = diff - daysRented.rows[0].daysRented;
+
+      console.log("dekayesd days", delayedDays);
+      if (delayedDays <= 0) {
+        connectionDB.query(
+          `UPDATE rentals SET "returnDate"=$1, 
+        "delayFee"=$2 WHERE id = $3`,
+          [returnDate, delayedDays * pricePerDay, rentalId]
+        );
+      }
+      res.sendStatus(200);
+    } else {
+      connectionDB.query(
+        `UPDATE rentals SET "returnDate"=$1, 
+        "delayFee"=$2 WHERE id = $3`,
+        [returnDate, 0, rentalId]
+      );
+      res.sendStatus(200);
+    }
   } catch (err) {
     res.status(500).send(err.message);
   }
