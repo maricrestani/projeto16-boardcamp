@@ -76,6 +76,7 @@ export async function insertNewRental(req, res) {
   VALUES ($1, $2, $3, $4, $5, $6, $7);`,
       [customerId, gameId, rentDate, daysRented, null, originalPrice, null]
     );
+
     res.sendStatus(201);
   } catch (err) {
     res.status(500).send(err.message);

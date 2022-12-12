@@ -26,9 +26,24 @@ export async function newRentalValidation(req, res, next) {
       return res.status(400).send("dias de aluguel precisa ser > 0");
     }
 
-    //- Ao inserir um aluguel, deve-se validar que existem jogos disponíveis,
-    //ou seja, que não tem alugueis em aberto acima da quantidade de jogos em estoque.
-    //Caso contrário, deve retornar **status 400**
+    const unavailableGames = await connectionDB.query(
+      `
+    SELECT FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL;`,
+      [gameId]
+    );
+
+    const totalStock = await connectionDB.query(
+      `
+    SELECT games."stockTotal" FROM games WHERE id = $1;`,
+      [gameId]
+    );
+
+    const availableGames =
+      totalStock.rows[0].stockTotal - unavailableGames.rows.length;
+
+    if (availableGames === 0 || availableGames < 0) {
+      return res.status(400).send("estoque esgotado para esse jogo");
+    }
   } catch (err) {
     res.status(500).send(err.message);
   }
