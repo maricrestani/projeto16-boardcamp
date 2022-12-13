@@ -8,6 +8,7 @@ import {
 import {
   newRentalValidation,
   rentedGameValidation,
+  returnGameValidation,
 } from "../middlewares/rentals.middlewares.js";
 
 const rentalsRouter = Router();
@@ -16,7 +17,7 @@ rentalsRouter.get("/rentals", returnRentals);
 rentalsRouter.post("/rentals", newRentalValidation, insertNewRental);
 rentalsRouter.post(
   "/rentals/:id/return",
-  rentedGameValidation,
+  returnGameValidation,
   returnRentedGame
 );
 rentalsRouter.delete("/rentals/:id", rentedGameValidation, deleteRental);

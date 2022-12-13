@@ -21,7 +21,8 @@ export async function insertNewCustomer(req, res) {
 }
 
 export async function returnCustomers(req, res) {
-  const cpf = req.query.cpf;
+  const { cpf } = req.query;
+  console.log("cpf", cpf);
 
   try {
     if (cpf) {
@@ -29,6 +30,7 @@ export async function returnCustomers(req, res) {
         `SELECT * FROM customers WHERE customers.cpf LIKE $1;`,
         [`${cpf}%`]
       );
+      console.log("filteredCustomers.rows", filteredCustomers.rows);
       return res.send(filteredCustomers.rows);
     }
 
@@ -49,8 +51,9 @@ export async function returnCustomerById(req, res) {
     );
 
     if (customer.rows.length > 0) {
-      console.log("customer", customer.rows);
-      res.send(customer.rows);
+
+
+      res.send(customer.rows[0]);
     } else {
       return res.status(404).send("não existe cliente com esse id");
     }

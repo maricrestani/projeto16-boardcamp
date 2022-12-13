@@ -69,8 +69,36 @@ export async function rentedGameValidation(req, res, next) {
       [rentalId]
     );
 
-    if (closedRental.rows[0].returnDate !== null) {
-      return res.status(400).send("aluguel finalizado");
+    if (!closedRental.rows[0].returnDate) {
+      return res.status(400).send("aluguel ainda não encerrado");
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+
+  next();
+}
+
+export async function returnGameValidation(req, res, next) {
+  const rentalId = req.params.id;
+
+  try {
+    const rentalExists = await connectionDB.query(
+      `SELECT * FROM rentals WHERE id = $1;`,
+      [rentalId]
+    );
+
+    if (rentalExists.rows.length === 0) {
+      return res.status(404).send("aluguel inexistente");
+    }
+
+    const closedRental = await connectionDB.query(
+      `SELECT "returnDate" FROM rentals WHERE id = $1;`,
+      [rentalId]
+    );
+
+    if (closedRental.rows[0].returnDate) {
+      return res.status(400).send("aluguel já encerrado");
     }
   } catch (err) {
     res.status(500).send(err.message);

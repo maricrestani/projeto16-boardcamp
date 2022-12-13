@@ -15,7 +15,7 @@ export async function insertNewGame(req, res) {
 
     await connectionDB.query(
       `INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5);`,
-      [name, image, stockTotal, categoryId, pricePerDay]
+      [name, image, stockTotal, categoryId, pricePerDay * 100]
     );
 
     res.sendStatus(201);
@@ -45,4 +45,3 @@ export async function returnGames(req, res) {
     res.status(500).send(err.message);
   }
 }
-

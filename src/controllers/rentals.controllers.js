@@ -2,8 +2,10 @@ import dayjs from "dayjs";
 import connectionDB from "../database/database.js";
 
 export async function returnRentals(req, res) {
-  const customerId = req.query.customerId;
-  const gameId = req.query.gameId;
+  const { customerId, gameId } = req.query;
+  let rentalsReturned = [];
+
+  console.log("customerId", customerId, "gameId", gameId);
 
   try {
     if (customerId) {
@@ -23,13 +25,15 @@ export async function returnRentals(req, res) {
       mapear(filteredByGameId);
     }
 
-    const allRentals = await connectionDB.query(
-      `SELECT rentals.*, customers.name AS "customerName", games.name AS "gameName",games."categoryId", categories.name AS "categoryName" FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id`
-    );
-    mapear(allRentals);
+    if (!customerId && !gameId) {
+      const allRentals = await connectionDB.query(
+        `SELECT rentals.*, customers.name AS "customerName", games.name AS "gameName",games."categoryId", categories.name AS "categoryName" FROM rentals JOIN customers ON rentals."customerId" = customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId" = categories.id`
+      );
+      mapear(allRentals);
+    }
 
     function mapear(array) {
-      let rentalsReturned = array.rows.map((m) => ({
+      rentalsReturned = array.rows.map((m) => ({
         id: m.id,
         customerId: m.customerId,
         gameId: m.gameId,
@@ -49,9 +53,8 @@ export async function returnRentals(req, res) {
           categoryName: m.categoryName,
         },
       }));
-
-      return res.send(rentalsReturned);
     }
+    res.send(rentalsReturned);
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -68,7 +71,7 @@ export async function insertNewRental(req, res) {
     );
 
     const rentDate = dayjs().format("YYYY-MM-DD");
-    const originalPrice = daysRented * pricePerDay.rows[0].pricePerDay * 100;
+    const originalPrice = daysRented * pricePerDay.rows[0].pricePerDay;
 
     await connectionDB.query(
       `INSERT INTO rentals
@@ -86,7 +89,6 @@ export async function insertNewRental(req, res) {
 export async function returnRentedGame(req, res) {
   const rentalId = req.params.id;
   const returnDate = dayjs().format("YYYY-MM-DD");
-  const dateToday = dayjs().format("YYYY-MM-DD");
 
   try {
     const rentDate = await connectionDB.query(
@@ -107,7 +109,7 @@ export async function returnRentedGame(req, res) {
     const pricePerDay =
       originalPrice.rows[0].originalPrice / daysRented.rows[0].daysRented;
 
-    const diff = dayjs(rentDate.rows[0].rentDate).diff(dateToday, "day");
+    const diff = dayjs(rentDate.rows[0].rentDate).diff(returnDate, "day");
 
     if (diff >= 0) {
       const delayedDays = diff - daysRented.rows[0].daysRented;
