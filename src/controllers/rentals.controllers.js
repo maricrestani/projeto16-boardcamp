@@ -5,8 +5,6 @@ export async function returnRentals(req, res) {
   const { customerId, gameId } = req.query;
   let rentalsReturned = [];
 
-  console.log("customerId", customerId, "gameId", gameId);
-
   try {
     if (customerId) {
       const filteredBycustomerId = await connectionDB.query(
